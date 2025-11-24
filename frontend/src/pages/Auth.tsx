@@ -30,12 +30,22 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    console.log("Attempting sign up with:", email);
+    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: window.location.origin + "/dashboard",
+      }
     });
 
+    console.log("Sign up response:", { data, error });
+
     if (error) {
+      console.error("Sign up error:", error);
       toast({
         variant: "destructive",
         title: "Error signing up",
@@ -44,8 +54,12 @@ const Auth = () => {
     } else {
       toast({
         title: "Success!",
-        description: "Please check your email to verify your account.",
+        description: "Account created! You can now sign in.",
       });
+      // Auto-navigate to dashboard if email confirmation is disabled
+      if (data.session) {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };
@@ -53,18 +67,25 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+
+    console.log("Attempting sign in with:", email);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    console.log("Sign in response:", { data, error });
+
     if (error) {
+      console.error("Sign in error:", error);
       toast({
         variant: "destructive",
         title: "Error signing in",
         description: error.message,
       });
     } else {
+      console.log("Sign in successful, navigating to dashboard");
       navigate("/dashboard");
     }
     setLoading(false);
@@ -144,10 +165,11 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Input
                       type="password"
-                      placeholder="Password"
+                      placeholder="Password (min 6 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      minLength={6}
                       className="bg-background/50 border-input focus:border-primary transition-colors"
                     />
                   </div>

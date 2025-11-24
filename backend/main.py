@@ -1,25 +1,30 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 import shutil
 import os
 import uuid
 from dotenv import load_dotenv
 from ocr import extract_text_from_image, extract_text_from_pdf
+from llm_client import generate_text
+from agents.ingestion_agent import ingestion_agent
+from agents.extraction_agent import extraction_agent
+from agents.chat_agent import chat_agent
+from agents.workflow_agent import workflow_agent
 
 load_dotenv()
 
 app = FastAPI()
 
-# CORS configuration
-origins = [
-    "http://localhost:5173", # Vite default port
-    "http://localhost:3000", # Next.js default port
-    "*" # Allow all for hackathon/dev speed
-]
+# Mount static directory for thumbnails
+os.makedirs("backend/static/thumbnails", exist_ok=True)
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,8 +59,6 @@ async def ocr_test(file: UploadFile = File(...)):
             content_type = "pdf"
             extracted_text = extract_text_from_pdf(file_path)
         else:
-            # Fallback or error for unsupported types
-            # For now, let's just try to read it as text or return error
              raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_extension}")
 
         return {
@@ -74,14 +77,10 @@ async def ocr_test(file: UploadFile = File(...)):
             except Exception as cleanup_error:
                 print(f"Failed to remove temp file {file_path}: {cleanup_error}")
 
-from llm_client import generate_text
-
 @app.post("/llm-test")
 async def llm_test(prompt: str = "Hello, who are you?"):
     response = generate_text(prompt)
     return {"response": response}
-
-from agents.ingestion_agent import ingestion_agent
 
 @app.post("/agents/ingest")
 async def ingest_document(file: UploadFile = File(...)):
@@ -105,9 +104,6 @@ async def ingest_document(file: UploadFile = File(...)):
             except:
                 pass
 
-from agents.extraction_agent import extraction_agent
-from pydantic import BaseModel
-
 class ExtractRequest(BaseModel):
     text: str
     doc_type: str
@@ -119,9 +115,6 @@ async def extract_data(request: ExtractRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-from agents.chat_agent import chat_agent
-from agents.workflow_agent import workflow_agent
 
 class ChatRequest(BaseModel):
     message: str

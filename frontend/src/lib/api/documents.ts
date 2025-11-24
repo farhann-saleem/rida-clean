@@ -6,6 +6,7 @@ export interface Document {
   file_type: string;
   status: string;
   created_at: string;
+  extracted_data?: any;
 }
 
 export const fetchDocuments = async (): Promise<Document[]> => {
@@ -30,7 +31,8 @@ export const createDocument = async (file: File) => {
     type: "unknown",
     summary: "Pending analysis...",
     confidence: 0,
-    full_text: ""
+    full_text: "",
+    thumbnail_url: ""
   };
 
   try {
@@ -63,6 +65,7 @@ export const createDocument = async (file: File) => {
         detected_type: analysisResult.type,
         confidence: analysisResult.confidence,
         full_text: analysisResult.full_text, // Save full text for Chat
+        thumbnail_url: analysisResult.thumbnail_url, // Save thumbnail URL
         // Placeholders for Extraction Agent
         vendor: "Pending Extraction",
         total_amount: "Pending"

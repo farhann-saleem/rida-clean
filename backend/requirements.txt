@@ -5,5 +5,6 @@ pytesseract
 pdfplumber
 python-dotenv
 Pillow
-google-generativeai
 ollama
+pydantic
+pypdfium2

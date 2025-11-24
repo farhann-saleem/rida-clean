@@ -129,8 +129,9 @@ const Documents = () => {
           <p className="text-muted-foreground">Manage and analyze your operational documents</p>
         </div>
 
-        <Card className="border-dashed border-2 overflow-hidden relative group transition-colors duration-300 hover:border-primary/50">
+        <Card className="border-dashed border-2 overflow-hidden relative group transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 bg-white/40 dark:bg-black/40 backdrop-blur-sm">
           <div className={`absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+
           <CardContent className="p-0">
             <motion.div
               onDrop={handleDrop}
@@ -141,53 +142,83 @@ const Documents = () => {
                 backgroundColor: isDragging ? "rgba(var(--primary), 0.05)" : "transparent"
               }}
               className={`
-                relative flex flex-col items-center justify-center py-16 px-4 transition-all duration-300 ease-in-out
-                ${isDragging ? "bg-primary/5" : "bg-background hover:bg-muted/30"}
+                relative flex flex-col items-center justify-center py-20 px-4 transition-all duration-300 ease-in-out min-h-[400px]
+                ${isDragging ? "bg-primary/5" : ""}
               `}
             >
-              <motion.div
-                animate={{
-                  scale: isDragging ? 1.1 : 1,
-                  rotate: isDragging ? 10 : 0
-                }}
-                className={`
-                  h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6
-                  shadow-lg shadow-primary/10
-                `}
-              >
-                <CloudUpload className={`h-10 w-10 text-primary`} />
-              </motion.div>
+              {uploading ? (
+                <div className="relative w-full max-w-md aspect-[3/4] bg-white dark:bg-zinc-900 rounded-lg shadow-2xl overflow-hidden border">
+                  {/* Scanning Animation */}
+                  <div className="scan-line" />
 
-              <h3 className="text-xl font-semibold mb-2">
-                {isDragging ? "Drop file to upload" : "Upload your documents"}
-              </h3>
-              <p className="text-muted-foreground text-center max-w-sm mb-6">
-                Drag and drop your invoices, contracts, or receipts here.
-                We support PDF, PNG, and JPG up to 10MB.
-              </p>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center"
+                    >
+                      <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    </motion.div>
+                    <div>
+                      <h3 className="font-semibold text-lg">Analyzing Document</h3>
+                      <p className="text-sm text-muted-foreground">RIDA is extracting structured data...</p>
+                    </div>
+                  </div>
 
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                />
-                <Button size="lg" className="relative z-0 min-w-[160px] shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all" disabled={uploading}>
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
+                  {/* Faux Document Content for Visual Effect */}
+                  <div className="p-8 space-y-4 opacity-30 blur-[1px]">
+                    <div className="h-8 w-1/2 bg-foreground/20 rounded" />
+                    <div className="space-y-2 pt-4">
+                      <div className="h-4 w-full bg-foreground/10 rounded" />
+                      <div className="h-4 w-5/6 bg-foreground/10 rounded" />
+                      <div className="h-4 w-4/6 bg-foreground/10 rounded" />
+                    </div>
+                    <div className="pt-8 grid grid-cols-3 gap-4">
+                      <div className="h-20 bg-foreground/5 rounded" />
+                      <div className="h-20 bg-foreground/5 rounded" />
+                      <div className="h-20 bg-foreground/5 rounded" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <motion.div
+                    animate={{
+                      y: isDragging ? -10 : 0,
+                      scale: isDragging ? 1.1 : 1,
+                    }}
+                    className={`
+                      h-24 w-24 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-8
+                      shadow-xl shadow-primary/10 border border-primary/10 backdrop-blur-sm
+                    `}
+                  >
+                    <CloudUpload className={`h-12 w-12 text-primary`} />
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                    {isDragging ? "Drop file to upload" : "Upload your documents"}
+                  </h3>
+                  <p className="text-muted-foreground text-center max-w-md mb-8 text-lg">
+                    Drag and drop your invoices, contracts, or receipts here.
+                    <br />
+                    <span className="text-sm opacity-70">Supports PDF, PNG, JPG up to 10MB</span>
+                  </p>
+
+                  <div className="relative group/btn">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                    />
+                    <Button size="lg" className="relative z-0 min-w-[200px] h-12 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-primary hover:bg-primary/90">
+                      <Upload className="mr-2 h-5 w-5" />
                       Browse Files
-                    </>
-                  )}
-                </Button>
-              </div>
+                    </Button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </CardContent>
         </Card>
@@ -231,10 +262,23 @@ const Documents = () => {
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                                <FileText className="h-4 w-4" />
+                              <div className="h-10 w-10 rounded-lg overflow-hidden bg-primary/10 relative group-hover:scale-110 transition-transform flex-shrink-0">
+                                {doc.extracted_data?.thumbnail_url ? (
+                                  <img
+                                    src={doc.extracted_data.thumbnail_url}
+                                    alt="Thumbnail"
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                <div className={`absolute inset-0 flex items-center justify-center ${doc.extracted_data?.thumbnail_url ? 'hidden' : ''}`}>
+                                  <FileText className="h-5 w-5 text-primary" />
+                                </div>
                               </div>
-                              <span className="group-hover:text-primary transition-colors">{doc.filename}</span>
+                              <span className="group-hover:text-primary transition-colors font-medium">{doc.filename}</span>
                             </div>
                           </TableCell>
                           <TableCell className="uppercase text-xs font-medium text-muted-foreground">{doc.file_type}</TableCell>

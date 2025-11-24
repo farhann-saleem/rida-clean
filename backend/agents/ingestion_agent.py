@@ -1,6 +1,6 @@
 import os
 import json
-from ocr import extract_text_from_image, extract_text_from_pdf
+from ocr import extract_text_from_image, extract_text_from_pdf, generate_thumbnail
 from llm_client import generate_text
 
 class IngestionAgent:
@@ -56,10 +56,20 @@ class IngestionAgent:
             clean_response = llm_response.replace("```json", "").replace("```", "").strip()
             result = json.loads(clean_response)
             
+            # Generate Thumbnail
+            thumbnail_filename = f"{os.path.splitext(os.path.basename(filename))[0]}_{os.path.basename(file_path)}.png"
+            thumbnail_path = os.path.join("backend/static/thumbnails", thumbnail_filename)
+            thumbnail_url = ""
+            
+            if generate_thumbnail(file_path, thumbnail_path):
+                # URL accessible from frontend
+                thumbnail_url = f"http://localhost:8000/static/thumbnails/{thumbnail_filename}"
+
             # Add metadata
             result["filename"] = filename
             result["extracted_text_length"] = len(text)
             result["full_text"] = text  # Return full text for RAG
+            result["thumbnail_url"] = thumbnail_url
             
             return result
         except json.JSONDecodeError:
