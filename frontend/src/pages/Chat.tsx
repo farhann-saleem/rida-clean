@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Document {
   id: string;
   filename: string;
+  extracted_data: any;
 }
 
 interface ChatMessage {
@@ -31,23 +32,14 @@ const Chat = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchDocuments();
-    fetchMessages();
-  }, []);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   const fetchDocuments = async () => {
     const { data } = await supabase
       .from("documents")
-      .select("id, filename")
+      .select("id, filename, extracted_data")
       .order("created_at", { ascending: false });
 
     if (data) {
-      setDocuments(data);
+      setDocuments(data as any);
     }
   };
 
@@ -61,6 +53,15 @@ const Chat = () => {
       setMessages(data as ChatMessage[]);
     }
   };
+
+  useEffect(() => {
+    fetchDocuments();
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleDocToggle = (docId: string) => {
     setSelectedDocs(prev =>
@@ -100,11 +101,44 @@ const Chat = () => {
       return;
     }
 
-    // Mock RIDA response
+    // Prepare Context from Selected Docs
+    let contextText = "";
+    if (selectedDocs.length > 0) {
+      const selectedDocObjects = documents.filter(d => selectedDocs.includes(d.id));
+      contextText = selectedDocObjects.map(d => {
+        const text = d.extracted_data?.full_text || "";
+        return `Document: ${d.filename}\n${text}`;
+      }).join("\n\n");
+    }
+
+    // Call RIDA Backend
+    let aiResponseContent = "I'm sorry, I couldn't process that.";
+    try {
+      const response = await fetch("http://localhost:8000/agents/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: input,
+          context: contextText
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        aiResponseContent = data.response;
+      } else {
+        aiResponseContent = "Error communicating with RIDA Brain.";
+      }
+    } catch (e) {
+      console.error(e);
+      aiResponseContent = "Failed to connect to RIDA Backend.";
+    }
+
+    // Save RIDA response
     const ridaResponse = {
       user_id: user.id,
       role: "assistant" as const,
-      content: `I'm analyzing your request against ${selectedDocs.length} document(s). This is a placeholder response while we connect the Raindrop backend.`,
+      content: aiResponseContent,
       document_ids: selectedDocs
     };
 
@@ -223,8 +257,8 @@ const Chat = () => {
 
                         <div
                           className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${msg.role === "user"
-                              ? "bg-primary text-primary-foreground rounded-br-none"
-                              : "bg-white dark:bg-zinc-800 border rounded-bl-none"
+                            ? "bg-primary text-primary-foreground rounded-br-none"
+                            : "bg-white dark:bg-zinc-800 border rounded-bl-none"
                             }`}
                         >
                           <p className="text-sm leading-relaxed">{msg.content}</p>
