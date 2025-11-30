@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import shutil
 import os
 import uuid
+from datetime import datetime
 from dotenv import load_dotenv
 from ocr import extract_text_from_image, extract_text_from_pdf
 from llm_client import generate_text
@@ -12,6 +13,8 @@ from agents.ingestion_agent import ingestion_agent
 from agents.extraction_agent import extraction_agent
 from agents.chat_agent import chat_agent
 from agents.workflow_agent import workflow_agent
+from agents.analytics_agent import analytics_agent
+from agents.export_agent import export_agent
 
 load_dotenv()
 
@@ -130,15 +133,102 @@ async def chat_with_docs(request: ChatRequest):
 
 class WorkflowRequest(BaseModel):
     doc_data: dict
+    all_documents: list = None
 
 @app.post("/agents/workflow")
 async def run_workflow(request: WorkflowRequest):
     try:
-        result = workflow_agent.evaluate(request.doc_data)
+        result = workflow_agent.evaluate(request.doc_data, request.all_documents)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Analytics endpoint
+class AnalyticsRequest(BaseModel):
+    documents: list
+    query: str = None
+
+@app.post("/agents/analytics")
+async def get_analytics(request: AnalyticsRequest):
+    try:
+        result = analytics_agent.analyze(request.documents, request.query)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Export endpoint
+class ExportRequest(BaseModel):
+    documents: list
+    format: str  # 'csv', 'quickbooks', 'excel'
+
+@app.post("/agents/export")
+async def export_documents(request: ExportRequest):
+    try:
+        if request.format == 'csv':
+            content = export_agent.export_to_csv(request.documents)
+            return {"content": content, "filename": f"rida_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+        elif request.format == 'quickbooks':
+            content = export_agent.export_to_quickbooks_iif(request.documents)
+            return {"content": content, "filename": f"rida_export_{datetime.now().strftime('%Y%m%d')}.iif"}
+        elif request.format == 'excel':
+            data = export_agent.export_to_excel_compatible(request.documents)
+            return {"data": data, "filename": f"rida_export_{datetime.now().strftime('%Y%m%d')}.xlsx"}
+        else:
+            raise HTTPException(status_code=400, detail="Invalid format. Use 'csv', 'quickbooks', or 'excel'")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Comparison endpoint
+class ComparisonRequest(BaseModel):
+    doc1_data: dict
+    doc2_data: dict
+
+@app.post("/agents/compare")
+async def compare_documents(request: ComparisonRequest):
+    try:
+        # Extract data from both documents
+        doc1_extracted = request.doc1_data.get("extracted_data", {})
+        doc2_extracted = request.doc2_data.get("extracted_data", {})
+        
+        # Build comparison
+        comparison = {
+            "document1": {
+                "filename": request.doc1_data.get("filename"),
+                "vendor": doc1_extracted.get("vendor", ""),
+                "amount": doc1_extracted.get("total_amount", ""),
+                "date": doc1_extracted.get("date", ""),
+                "invoice_number": doc1_extracted.get("invoice_number", "")
+            },
+            "document2": {
+                "filename": request.doc2_data.get("filename"),
+                "vendor": doc2_extracted.get("vendor", ""),
+                "amount": doc2_extracted.get("total_amount", ""),
+                "date": doc2_extracted.get("date", ""),
+                "invoice_number": doc2_extracted.get("invoice_number", "")
+            },
+            "differences": [],
+            "is_duplicate": False
+        }
+        
+        # Check for differences
+        if doc1_extracted.get("vendor") != doc2_extracted.get("vendor"):
+            comparison["differences"].append({"field": "vendor", "type": "different"})
+        
+        if doc1_extracted.get("total_amount") != doc2_extracted.get("total_amount"):
+            comparison["differences"].append({"field": "amount", "type": "different"})
+        
+        # Check for duplicate
+        if (doc1_extracted.get("vendor", "").lower() == doc2_extracted.get("vendor", "").lower() and
+            doc1_extracted.get("invoice_number") == doc2_extracted.get("invoice_number") and
+            doc1_extracted.get("invoice_number")):
+            comparison["is_duplicate"] = True
+            comparison["differences"].append({"field": "invoice_number", "type": "duplicate"})
+        
+        return comparison
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     uvicorn.run(app, host="0.0.0.0", port=8000)

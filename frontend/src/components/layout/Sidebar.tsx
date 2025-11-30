@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, MessageSquare, Workflow, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, MessageSquare, Workflow, LogOut, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ const navItems = [
   { title: "Documents", url: "/documents", icon: FileText },
   { title: "Chat", url: "/chat", icon: MessageSquare },
   { title: "Workflows", url: "/workflows", icon: Workflow },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
 
 export const AppSidebar = () => {
