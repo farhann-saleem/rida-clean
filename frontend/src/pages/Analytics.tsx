@@ -155,11 +155,11 @@ export default function Analytics() {
                 </div>
 
                 {/* Document Selection */}
-                <Card>
+                <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>Select Documents</CardTitle>
+                                <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Select Documents</CardTitle>
                                 <CardDescription>Choose which documents to include in analytics</CardDescription>
                             </div>
                             <Button onClick={handleSelectAll} variant="outline" size="sm">
@@ -173,10 +173,10 @@ export default function Analytics() {
                                 <div
                                     key={doc.id}
                                     onClick={() => handleDocumentToggle(doc.id)}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedDocuments.includes(doc.id)
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:border-primary/50'
-                                        }`}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedDocuments.includes(doc.id)
+                                        ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20'
+                                        : 'border-purple-100 dark:border-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-purple-950/10'
+                                    }`}
                                 >
                                     <Checkbox
                                         checked={selectedDocuments.includes(doc.id)}
@@ -201,48 +201,68 @@ export default function Analytics() {
                 {analytics && (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden group">
+                                <motion.div 
+                                    className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    animate={{ opacity: [0.05, 0.1, 0.05] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                                     <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
                                     <FileText className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="relative z-10">
                                     <div className="text-2xl font-bold">{analytics.summary.total_documents}</div>
                                 </CardContent>
                             </Card>
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden group">
+                                <motion.div 
+                                    className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    animate={{ opacity: [0.05, 0.1, 0.05] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                                     <CardTitle className="text-sm font-medium">Total Spend</CardTitle>
                                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="relative z-10">
                                     <div className="text-2xl font-bold">{analytics.summary.total_spend}</div>
                                 </CardContent>
                             </Card>
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden group">
+                                <motion.div 
+                                    className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    animate={{ opacity: [0.05, 0.1, 0.05] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                                     <CardTitle className="text-sm font-medium">Average Amount</CardTitle>
                                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="relative z-10">
                                     <div className="text-2xl font-bold">{analytics.summary.average_spend}</div>
                                 </CardContent>
                             </Card>
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden group">
+                                <motion.div 
+                                    className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    animate={{ opacity: [0.05, 0.1, 0.05] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                                     <CardTitle className="text-sm font-medium">Highest Amount</CardTitle>
                                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="relative z-10">
                                     <div className="text-2xl font-bold">{analytics.summary.highest_amount}</div>
                                 </CardContent>
                             </Card>
@@ -251,9 +271,9 @@ export default function Analytics() {
                 )}
 
                 {/* Natural Language Query */}
-                <Card>
+                <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
                     <CardHeader>
-                        <CardTitle>Ask Questions</CardTitle>
+                        <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Ask Questions</CardTitle>
                         <CardDescription>Query your selected documents using natural language</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -265,7 +285,7 @@ export default function Analytics() {
                                 onKeyPress={(e) => e.key === 'Enter' && !queryLoading && handleQuery()}
                                 disabled={queryLoading || selectedDocuments.length === 0}
                             />
-                            <Button onClick={handleQuery} disabled={queryLoading || selectedDocuments.length === 0}>
+                            <Button onClick={handleQuery} disabled={queryLoading || selectedDocuments.length === 0} className="bg-purple-600 hover:bg-purple-700 text-white">
                                 {queryLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -289,9 +309,9 @@ export default function Analytics() {
 
                 {/* Top Vendors */}
                 {analytics && analytics.by_vendor.length > 0 && (
-                    <Card>
+                    <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
                         <CardHeader>
-                            <CardTitle>Top Vendors</CardTitle>
+                            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Top Vendors</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
@@ -311,9 +331,9 @@ export default function Analytics() {
 
                 {/* Monthly Trends */}
                 {analytics && analytics.monthly_trends.length > 0 && (
-                    <Card>
+                    <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
                         <CardHeader>
-                            <CardTitle>Monthly Spending</CardTitle>
+                            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Monthly Spending</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">

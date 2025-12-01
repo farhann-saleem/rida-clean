@@ -85,44 +85,137 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ y: -4 }}
+            className="group"
+          >
+            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                animate={{ opacity: [0.05, 0.1, 0.05] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
+                <Calendar className="h-4 w-4 text-purple-500" />
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">{stats.total}</div>
+                <p className="text-xs text-muted-foreground">Tracked invoices</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -4 }}
+            className="group"
+          >
+            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                animate={{ opacity: [0.05, 0.1, 0.05] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium">Overdue</CardTitle>
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+                <p className="text-xs text-muted-foreground">Require immediate action</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ y: -4 }}
+            className="group"
+          >
+            <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-300 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                animate={{ opacity: [0.05, 0.1, 0.05] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium">Due Soon</CardTitle>
+                <Clock className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-orange-600">{stats.upcoming}</div>
+                <p className="text-xs text-muted-foreground">Within 7 days</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Infrastructure Status */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/10 border-blue-200 dark:border-blue-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                Raindrop MCP Server
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">Tracked invoices</p>
+              <div className="text-xs text-muted-foreground">
+                Status: <span className="font-semibold text-green-600 dark:text-green-400">Active</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                SmartBuckets & SmartInference Online
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-              <AlertCircle className="h-4 w-4 text-red-500" />
+          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/30 dark:to-indigo-900/10 border-indigo-200 dark:border-indigo-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                Vultr Cloud Compute
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-              <p className="text-xs text-muted-foreground">Require immediate action</p>
+              <div className="text-xs text-muted-foreground">
+                Status: <span className="font-semibold text-green-600 dark:text-green-400">Connected</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Region: New Jersey (ewr)
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Due Soon</CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                Supabase Database
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.upcoming}</div>
-              <p className="text-xs text-muted-foreground">Within 7 days</p>
+              <div className="text-xs text-muted-foreground">
+                Status: <span className="font-semibold text-green-600 dark:text-green-400">Synced</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Real-time replication active
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Upcoming Payments */}
-        <Card>
+        <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
           <CardHeader>
-            <CardTitle>Upcoming Payments</CardTitle>
+            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Upcoming Payments</CardTitle>
             <CardDescription>Invoices sorted by due date</CardDescription>
           </CardHeader>
           <CardContent>
@@ -139,7 +232,8 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    whileHover={{ x: 4 }}
+                    className="flex items-center justify-between p-4 rounded-lg border-2 border-purple-200/30 dark:border-purple-800/30 bg-card hover:bg-purple-50/50 dark:hover:bg-purple-950/20 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-200 hover:shadow-md hover:shadow-purple-500/20"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">

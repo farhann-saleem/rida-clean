@@ -106,8 +106,13 @@ const Chat = () => {
     if (selectedDocs.length > 0) {
       const selectedDocObjects = documents.filter(d => selectedDocs.includes(d.id));
       contextText = selectedDocObjects.map(d => {
-        const text = d.extracted_data?.full_text || "";
-        return `Document: ${d.filename}\n${text}`;
+        // FIX APPLIED: Improved extracted data handling
+        const extractedData = d.extracted_data || {};
+        const text = extractedData.text || extractedData.full_text || "";
+        
+        let context = `Document: ${d.filename}\nExtracted Data: ${JSON.stringify(extractedData, null, 2)}\n`;
+        if (text) context += `Full Text: ${text}`;
+        return context;
       }).join("\n\n");
     }
 

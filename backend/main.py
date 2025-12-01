@@ -15,10 +15,25 @@ from agents.chat_agent import chat_agent
 from agents.workflow_agent import workflow_agent
 from agents.analytics_agent import analytics_agent
 from agents.export_agent import export_agent
+from agents.vultr_service import vultr_service
 
 load_dotenv()
 
 app = FastAPI()
+
+# Simple in-memory rate limiting (for hackathon demo)
+# Structure: { "user_id": { "uploads": 0, "questions": 0 } }
+usage_limits = {}
+
+def check_limit(user_id: str, limit_type: str, max_count: int):
+    if user_id not in usage_limits:
+        usage_limits[user_id] = {"uploads": 0, "questions": 0}
+    
+    if usage_limits[user_id][limit_type] >= max_count:
+        raise HTTPException(status_code=429, detail=f"Free Tier Limit Reached: Max {max_count} {limit_type} allowed.")
+    
+    usage_limits[user_id][limit_type] += 1
+
 
 # Mount static directory for thumbnails
 os.makedirs("backend/static/thumbnails", exist_ok=True)
@@ -86,7 +101,10 @@ async def llm_test(prompt: str = "Hello, who are you?"):
     return {"response": response}
 
 @app.post("/agents/ingest")
-async def ingest_document(file: UploadFile = File(...)):
+async def ingest_document(file: UploadFile = File(...), user_id: str = "demo_user"):
+    # Enforce Rate Limit (3 uploads)
+    check_limit(user_id, "uploads", 3)
+
     file_extension = os.path.splitext(file.filename)[1].lower()
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(TMP_DIR, unique_filename)
@@ -95,7 +113,21 @@ async def ingest_document(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
+        # Simulate Raindrop MCP Routing
+        print(f"[Raindrop MCP] Routing document {file.filename} to SmartBuckets...")
+        
+        # Simulate Vultr Backup
+        with open(file_path, "rb") as f:
+            file_data = f.read()
+            vultr_response = vultr_service.upload_file(unique_filename, file_data)
+            print(f"[Vultr] Backup status: {vultr_response}")
+
         result = ingestion_agent.process(file_path, file.filename)
+        
+        # Add Vultr metadata to result
+        result["vultr_backup_url"] = vultr_response.get("url")
+        result["raindrop_status"] = "processed"
+        
         return result
 
     except Exception as e:
@@ -122,9 +154,13 @@ async def extract_data(request: ExtractRequest):
 class ChatRequest(BaseModel):
     message: str
     context: str
+    user_id: str = "demo_user"
 
 @app.post("/agents/chat")
 async def chat_with_docs(request: ChatRequest):
+    # Enforce Rate Limit (5 questions)
+    check_limit(request.user_id, "questions", 5)
+
     try:
         response = chat_agent.chat(request.message, request.context)
         return {"response": response}
@@ -230,5 +266,4 @@ async def compare_documents(request: ComparisonRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
     uvicorn.run(app, host="0.0.0.0", port=8000)

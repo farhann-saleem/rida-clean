@@ -46,19 +46,21 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b px-6 py-4">
+    <Sidebar collapsible="icon" className="border-r-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-50/30 via-background to-background dark:from-purple-950/20 dark:via-background dark:to-background pointer-events-none" />
+
+      <SidebarHeader className="border-b border-purple-200/30 dark:border-purple-800/30 px-6 py-4 relative z-10">
         {open && (
-          <div>
-            <h1 className="text-xl font-bold">RIDA</h1>
+          <div className="group">
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">RIDA</h1>
             <p className="text-xs text-muted-foreground">Document Intelligence</p>
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="relative z-10">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-purple-700 dark:text-purple-300">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -67,6 +69,7 @@ export const AppSidebar = () => {
                     asChild
                     isActive={location.pathname === item.url}
                     tooltip={item.title}
+                    className="hover:bg-purple-100/50 dark:hover:bg-purple-900/20 data-[active=true]:bg-purple-200/70 dark:data-[active=true]:bg-purple-800/50 data-[active=true]:text-purple-900 dark:data-[active=true]:text-purple-100 transition-all duration-200 hover:shadow-md hover:shadow-purple-500/20"
                   >
                     <NavLink
                       to={item.url}
@@ -84,10 +87,10 @@ export const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t border-purple-200/30 dark:border-purple-800/30 p-4 relative z-10">
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start hover:bg-purple-100/50 dark:hover:bg-purple-900/20 hover:text-purple-900 dark:hover:text-purple-100 transition-all duration-200 hover:shadow-md hover:shadow-purple-500/20"
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />

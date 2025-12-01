@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, FileText, CloudUpload, Loader2, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { fetchDocuments, createDocument, updateDocumentStatus, deleteDocument, type Document } from "@/lib/api/documents";
+import { fetchDocuments, createDocument, deleteDocument, type Document } from "@/lib/api/documents";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Documents = () => {
@@ -32,30 +32,83 @@ const Documents = () => {
 
   const processFile = async (file: File) => {
     setUploading(true);
+    // Use the toast function correctly to get the update handle
+    const { id: toastId, update } = toast({
+      title: "Processing",
+      description: "Initializing upload...",
+    });
 
     try {
-      const doc = await createDocument(file);
+      // 1. Upload to backend (Ingestion Agent)
+      update({ id: toastId, title: "Processing", description: "Ingesting to Raindrop SmartBuckets..." });
 
-      toast({
-        title: "Uploading",
-        description: `${file.name} is being processed...`
+      // Simulate a slight delay for visual effect
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      update({ id: toastId, title: "Processing", description: "Backing up to Vultr Object Storage..." });
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const ingestResponse = await fetch("http://localhost:8000/agents/ingest", {
+        method: "POST",
+        body: formData,
       });
+
+      if (!ingestResponse.ok) {
+        if (ingestResponse.status === 429) {
+          throw new Error("Free Tier Limit Reached: Max 3 uploads allowed.");
+        }
+        throw new Error("Ingestion failed");
+      }
+
+      const ingestData = await ingestResponse.json();
+
+      update({ id: toastId, title: "Processing", description: "Extracting data with Raindrop SmartInference..." });
+
+      // 2. Extract data (Extraction Agent)
+      const extractResponse = await fetch("http://localhost:8000/agents/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: ingestData.text,
+          doc_type: ingestData.type
+        }),
+      });
+
+      if (!extractResponse.ok) {
+        throw new Error("Extraction failed");
+      }
+
+      const extractData = await extractResponse.json();
+
+      // 3. Save to Supabase
+      const { error } = await createDocument({
+        filename: file.name,
+        file_type: ingestData.type,
+        file_url: ingestData.vultr_backup_url || "", // Use mock URL
+        extracted_data: {
+          ...extractData,
+          thumbnail_url: ingestData.thumbnail,
+          raindrop_id: ingestData.raindrop_id
+        },
+        status: "ready"
+      });
+
+      if (error) throw error;
 
       await loadDocuments();
 
-      // Simulate processing delay and status change
-      setTimeout(async () => {
-        await updateDocumentStatus(doc.id, "ready");
-        await loadDocuments();
-
-        toast({
-          title: "Ready",
-          description: `${file.name} is ready for review`
-        });
-      }, 2000);
+      update({
+        id: toastId,
+        title: "Success",
+        description: "Document processed and stored securely.",
+      });
 
     } catch (error: any) {
-      toast({
+      console.error("Upload error:", error);
+      update({
+        id: toastId,
         variant: "destructive",
         title: "Upload failed",
         description: error.message
@@ -67,15 +120,14 @@ const Documents = () => {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent any parent click events
-    
+
     if (!window.confirm("Are you sure you want to delete this document?")) {
       return;
     }
 
     try {
-      // Assuming deleteDocument(id) is exported from your API file
       await deleteDocument(id);
-      
+
       // Update local state immediately
       setDocuments((prev) => prev.filter((doc) => doc.id !== id));
 
@@ -156,8 +208,8 @@ const Documents = () => {
           <p className="text-muted-foreground">Manage and analyze your operational documents</p>
         </div>
 
-        <Card className="border-dashed border-2 overflow-hidden relative group transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 bg-white/40 dark:bg-black/40 backdrop-blur-sm">
-          <div className={`absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+        <Card className="border-dashed border-2 border-purple-200/50 dark:border-purple-800/50 overflow-hidden relative group transition-all duration-500 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-2xl hover:shadow-purple-500/20 bg-white/40 dark:bg-black/40 backdrop-blur-sm">
+          <div className={`absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
 
           <CardContent className="p-0">
             <motion.div
@@ -250,9 +302,9 @@ const Documents = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-none bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+        <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 shadow-lg shadow-purple-500/10 bg-white/50 dark:bg-black/20 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Recent Uploads</CardTitle>
+            <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-purple-900 dark:from-purple-300 dark:to-purple-100">Recent Uploads</CardTitle>
             <CardDescription>Manage your document repository</CardDescription>
           </CardHeader>
           <CardContent>
@@ -285,7 +337,8 @@ const Documents = () => {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
-                          className="group hover:bg-muted/50 transition-colors border-b last:border-0"
+                          whileHover={{ x: 4 }}
+                          className="group hover:bg-purple-50/50 dark:hover:bg-purple-950/20 transition-all duration-200 border-b border-purple-200/20 dark:border-purple-800/20 last:border-0 hover:shadow-sm hover:shadow-purple-500/10"
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">

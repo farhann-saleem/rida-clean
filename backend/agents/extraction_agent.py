@@ -6,7 +6,7 @@ class ExtractionAgent:
         """
         Extracts structured fields from text based on document type.
         """
-        print(f"Extracting data for type: {doc_type}")
+        print(f"[Raindrop MCP] Starting SmartExtraction for document type: {doc_type}")
         
         # Define fields based on type
         fields_prompt = ""

@@ -25,7 +25,8 @@ class AnalyticsAgent:
             print(f"DEBUG: Extracted data: {extracted}")
             
             # Parse amount
-            amount_str = extracted.get("total_amount", "0")
+            amount_str = (extracted.get("Total Amount") or 
+                         extracted.get("total_amount") or "0")
             print(f"DEBUG: Amount string: {amount_str}")
             
             # Skip documents with pending extraction
@@ -42,7 +43,8 @@ class AnalyticsAgent:
                 continue
             
             # Track by vendor - check 'vendor' field (what we actually save)
-            vendor = extracted.get("vendor") or "Unknown"
+            vendor = (extracted.get("Vendor Name") or 
+                     extracted.get("vendor") or "Unknown")
             print(f"DEBUG: Vendor: {vendor}")
             
             # Skip documents with pending vendor

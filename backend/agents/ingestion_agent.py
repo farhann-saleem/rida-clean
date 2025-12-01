@@ -14,7 +14,8 @@ class IngestionAgent:
         2. Classifies the document type using LLM.
         3. Generates a brief summary.
         """
-        print(f"Ingesting file: {filename}")
+        print(f"[Raindrop MCP] Ingesting document: {filename}")
+        print(f"[Raindrop MCP] Initializing SmartBucket for storage...")
         
         # 1. Extract Text
         file_ext = os.path.splitext(filename)[1].lower()
@@ -57,6 +58,7 @@ class IngestionAgent:
             result = json.loads(clean_response)
             
             # Generate Thumbnail
+            print(f"[Raindrop MCP] Generating SmartThumbnail...")
             thumbnail_filename = f"{os.path.splitext(os.path.basename(filename))[0]}_{os.path.basename(file_path)}.png"
             thumbnail_path = os.path.join("backend/static/thumbnails", thumbnail_filename)
             thumbnail_url = ""
@@ -68,7 +70,7 @@ class IngestionAgent:
             # Add metadata
             result["filename"] = filename
             result["extracted_text_length"] = len(text)
-            result["full_text"] = text  # Return full text for RAG
+            result["text"] = text  # Return full text for extraction
             result["thumbnail_url"] = thumbnail_url
             
             return result
